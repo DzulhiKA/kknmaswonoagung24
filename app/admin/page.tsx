@@ -7,28 +7,31 @@ import {
   fetchAppDataFromSupabase, 
   saveAppDataToSupabase, 
   resetToDefaultData, 
-  getAdminAuthStatus, 
-  setAdminAuthStatus 
 } from '@/src/utils/storage';
 import { AdminDashboard } from '@/src/components/AdminDashboard';
-import { isSupabaseConfigured } from '@/src/lib/supabase';
-import { Lock, Key, User, ShieldCheck, Database, AlertCircle, ArrowLeft, Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react';
+import { isSupabaseConfigured, signInAdmin, signOutAdmin, onAuthStateChange, getAdminSession } from '@/src/lib/supabase';
+import { Lock, Key, ShieldCheck, Database, AlertCircle, ArrowLeft, Eye, EyeOff, Sparkles, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
   const [appData, setAppData] = useState<AppData>(INITIAL_APP_DATA);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [username, setUsername] = useState<string>('admin');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
   const [isDbConnected, setIsDbConnected] = useState<boolean>(false);
 
   useEffect(() => {
     const initAdminPage = async () => {
-      setIsDbConnected(isSupabaseConfigured());
-      setIsAdmin(getAdminAuthStatus());
+      const configured = isSupabaseConfigured();
+      setIsDbConnected(configured);
+
+      // Cek session yang aktif di Supabase Auth
+      const session = await getAdminSession();
+      setIsAdmin(!!session);
 
       // Load latest data from Supabase DB or Local Storage
       const data = await fetchAppDataFromSupabase();
@@ -37,30 +40,38 @@ export default function AdminPage() {
     };
 
     initAdminPage();
+
+    // Subscribe ke perubahan auth state (login/logout dari tab/device lain)
+    const unsubscribe = onAuthStateChange((loggedIn) => {
+      setIsAdmin(loggedIn);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const envPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
-    const validPasswords = [
-      envPassword.trim(),
-      'kknmas24wonoagung',
-      'kknmas24',
-      'admin',
-      '123456'
-    ].filter(Boolean);
-    
-    if (validPasswords.includes(password.trim())) {
-      setError('');
-      setIsAdmin(true);
-      setAdminAuthStatus(true);
-    } else {
-      setError('Password Admin tidak cocok! Silakan periksa kredensial di bawah.');
+    setIsAuthLoading(true);
+    setError('');
+
+    if (!isDbConnected) {
+      setError('Supabase belum terkonfigurasi. Periksa kembali file .env.local Anda.');
+      setIsAuthLoading(false);
+      return;
     }
+
+    const result = await signInAdmin(email.trim(), password);
+    if (result.success) {
+      setError('');
+      // isAdmin akan diupdate otomatis via onAuthStateChange
+    } else {
+      setError(`Login gagal: ${result.error || 'Email atau password salah.'}`);
+    }
+    setIsAuthLoading(false);
   };
 
   const handleQuickFillPassword = () => {
-    setUsername('admin');
+    setEmail('admin@kknwonoagung24.com');
     setPassword('kknmas24wonoagung');
     setError('');
   };
@@ -75,9 +86,9 @@ export default function AdminPage() {
     setAppData(defaultData);
   };
 
-  const handleLogout = () => {
-    setIsAdmin(false);
-    setAdminAuthStatus(false);
+  const handleLogout = async () => {
+    await signOutAdmin();
+    // isAdmin akan diupdate otomatis via onAuthStateChange
   };
 
   if (isLoading) {
@@ -91,7 +102,7 @@ export default function AdminPage() {
         </div>
         <div className="text-center space-y-1">
           <h3 className="font-bold text-lg text-white">Memuat Dashboard CMS...</h3>
-          <p className="text-xs text-slate-400">Sinkronisasi data dengan Supabase Database</p>
+          <p className="text-xs text-slate-400">Memeriksa sesi admin & sinkronisasi data</p>
         </div>
       </div>
     );
@@ -123,7 +134,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* Main Area: Render Dashboard or Handcrafted Login Form */}
+      {/* Main Area: Render Dashboard or Login Form */}
       {isAdmin ? (
         <div className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full z-10">
           
@@ -189,22 +200,26 @@ export default function AdminPage() {
             {/* Login Form */}
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               
+              {/* Email Field */}
               <div>
                 <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Username Admin
+                  Email Admin
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
-                    type="text"
+                    id="admin-email"
+                    type="email"
                     required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="contoh@email.com"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-emerald-500 transition-colors font-medium"
                   />
                 </div>
               </div>
 
+              {/* Password Field */}
               <div>
                 <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-1.5">
                   Password Sandi
@@ -212,6 +227,7 @@ export default function AdminPage() {
                 <div className="relative">
                   <Key className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="admin-password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
@@ -229,7 +245,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Instant Password Preset Button */}
+              {/* Instant Credential Preset Button */}
               <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-700/50 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-emerald-300 font-medium">
                   <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -240,16 +256,17 @@ export default function AdminPage() {
                   onClick={handleQuickFillPassword}
                   className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white font-bold rounded-lg border border-emerald-500/40 transition-all text-[11px]"
                 >
-                  Isi Otomatis Sandi
+                  Isi Otomatis
                 </button>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                disabled={isAuthLoading}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-200" />
-                Masuk Dashboard Admin
+                {isAuthLoading ? 'Memeriksa Kredensial...' : 'Masuk Dashboard Admin'}
               </button>
             </form>
 

@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { AppData } from './types';
 import { INITIAL_APP_DATA } from './data/defaultData';
-import { getStoredAppData, fetchAppDataFromSupabase } from './utils/storage';
+import { fetchAppDataFromSupabase } from './utils/storage';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { StrukturalSection } from './components/StrukturalSection';
@@ -17,14 +19,57 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<string>('home');
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
-  // Synchronize data from Supabase DB or Local Storage
+  // Synchronize data from Supabase DB or Local Storage, then subscribe to realtime updates
   useEffect(() => {
     setIsMounted(true);
+
     const loadData = async () => {
       const dbData = await fetchAppDataFromSupabase();
       setAppData(dbData);
     };
     loadData();
+
+    // ============================================================
+    // Supabase Realtime Subscription
+    // Dengarkan perubahan pada tabel site_data.
+    // Setiap kali admin menyimpan data, halaman ini otomatis update
+    // tanpa perlu refresh browser untuk semua pengunjung.
+    // ============================================================
+    let realtimeChannel: RealtimeChannel | null = null;
+
+    if (isSupabaseConfigured() && supabase) {
+      realtimeChannel = supabase
+        .channel('site_data_realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',       // Dengarkan event UPDATE pada tabel
+            schema: 'public',
+            table: 'site_data',
+            filter: 'id=eq.kkn_wonoagung_data',  // Hanya untuk row data kita
+          },
+          (payload) => {
+            // Payload berisi data terbaru dari DB
+            if (payload.new && (payload.new as { data: AppData }).data) {
+              const freshData = (payload.new as { data: AppData }).data;
+              setAppData(freshData);
+              console.log('[Realtime] Data halaman diperbarui dari admin!');
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[Realtime] Berhasil subscribe ke perubahan site_data.');
+          }
+        });
+    }
+
+    // Cleanup: hapus subscription saat komponen unmount
+    return () => {
+      if (realtimeChannel && supabase) {
+        supabase.removeChannel(realtimeChannel);
+      }
+    };
   }, []);
 
   // Scroll section listener to highlight active navigation link

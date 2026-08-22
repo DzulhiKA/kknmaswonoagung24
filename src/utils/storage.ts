@@ -3,16 +3,8 @@ import { INITIAL_APP_DATA } from '../data/defaultData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const STORAGE_KEY = 'kkn_mas_kelompok_24_data_v5';
-const ADMIN_AUTH_KEY = 'kkn_mas_admin_logged_in';
 
 const isBrowser = () => typeof window !== 'undefined';
-
-// Default Admin Password (bisa disesuaikan atau dibaca dari env)
-const DEFAULT_ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'kknmas24wonoagung';
-
-export const verifyAdminPassword = (inputPassword: string): boolean => {
-  return inputPassword.trim() === DEFAULT_ADMIN_PASSWORD;
-};
 
 // 1. Synchronous Load (Local Cache / Fallback)
 export const getStoredAppData = (): AppData => {
@@ -137,20 +129,5 @@ export const resetToDefaultData = (): AppData => {
   return INITIAL_APP_DATA;
 };
 
-export const getAdminAuthStatus = (): boolean => {
-  if (!isBrowser()) {
-    return false;
-  }
-  return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
-};
-
-export const setAdminAuthStatus = (isLoggedIn: boolean): void => {
-  if (!isBrowser()) {
-    return;
-  }
-  if (isLoggedIn) {
-    localStorage.setItem(ADMIN_AUTH_KEY, 'true');
-  } else {
-    localStorage.removeItem(ADMIN_AUTH_KEY);
-  }
-};
+// Auth admin kini dikelola sepenuhnya oleh Supabase Auth.
+// Lihat: src/lib/supabase.ts → signInAdmin, signOutAdmin, onAuthStateChange
