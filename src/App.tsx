@@ -18,6 +18,8 @@ export default function App() {
   const [appData, setAppData] = useState<AppData>(INITIAL_APP_DATA);
   const [activeSection, setActiveSection] = useState<string>('home');
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  // Mencegah konten default (INITIAL_APP_DATA) terlihat sebelum data Supabase tiba
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
 
   // Synchronize data from Supabase DB or Local Storage, then subscribe to realtime updates
   useEffect(() => {
@@ -26,12 +28,12 @@ export default function App() {
     const loadData = async () => {
       const dbData = await fetchAppDataFromSupabase();
       setAppData(dbData);
+      setIsDataLoading(false); // Data sudah tersedia, sembunyikan loading
     };
     loadData();
 
     // ============================================================
     // Supabase Realtime Subscription
-    // Dengarkan perubahan pada tabel site_data.
     // Setiap kali admin menyimpan data, halaman ini otomatis update
     // tanpa perlu refresh browser untuk semua pengunjung.
     // ============================================================
@@ -43,13 +45,12 @@ export default function App() {
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',       // Dengarkan event UPDATE pada tabel
+            event: 'UPDATE',
             schema: 'public',
             table: 'site_data',
-            filter: 'id=eq.kkn_wonoagung_data',  // Hanya untuk row data kita
+            filter: 'id=eq.kkn_wonoagung_data',
           },
           (payload) => {
-            // Payload berisi data terbaru dari DB
             if (payload.new && (payload.new as { data: AppData }).data) {
               const freshData = (payload.new as { data: AppData }).data;
               setAppData(freshData);
@@ -64,7 +65,6 @@ export default function App() {
         });
     }
 
-    // Cleanup: hapus subscription saat komponen unmount
     return () => {
       if (realtimeChannel && supabase) {
         supabase.removeChannel(realtimeChannel);
@@ -104,6 +104,35 @@ export default function App() {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  // ─── Loading screen ──────────────────────────────────────────────────────────
+  // Cegah konten default/placeholder terlihat saat fetch pertama dari Supabase
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100 border-2 border-emerald-200 flex items-center justify-center">
+            <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24">
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 3v1m0 16v1m8.66-10H20M4 12H3m14.66-6.34-.7.7M7.04 17.3l-.7.7m12.02 0-.7-.7M7.04 6.66l-.7-.7"
+              />
+            </svg>
+          </div>
+          <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400 animate-ping opacity-30" />
+        </div>
+        <div className="space-y-2 text-center">
+          <div className="h-3 w-48 bg-slate-200 rounded-full animate-pulse mx-auto" />
+          <div className="h-2.5 w-32 bg-slate-100 rounded-full animate-pulse mx-auto" />
+        </div>
+        <p className="text-xs text-slate-400 font-medium">Memuat konten website...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-500 selection:text-white flex flex-col">

@@ -602,6 +602,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
+              {/* ── MISI EDITOR ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-emerald-300">Misi Kelompok</label>
+                  <button
+                    type="button"
+                    onClick={() => setHomeForm({ ...homeForm, mission: [...(homeForm.mission || []), ''] })}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-[11px] font-bold border border-emerald-500/40 transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Tambah Poin Misi
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {(homeForm.mission || []).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-emerald-400 w-5 shrink-0 text-center">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={item}
+                        onChange={(e) => {
+                          const updated = [...(homeForm.mission || [])];
+                          updated[idx] = e.target.value;
+                          setHomeForm({ ...homeForm, mission: updated });
+                        }}
+                        placeholder={`Poin misi ke-${idx + 1}...`}
+                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (homeForm.mission || []).filter((_, i) => i !== idx);
+                          setHomeForm({ ...homeForm, mission: updated });
+                        }}
+                        className="p-2 bg-slate-950 hover:bg-rose-950 text-rose-400 rounded-xl border border-slate-800 shrink-0 transition-colors"
+                        title="Hapus poin misi ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!homeForm.mission || homeForm.mission.length === 0) && (
+                    <p className="text-xs text-slate-500 italic py-2 text-center">Belum ada poin misi. Klik &quot;Tambah Poin Misi&quot; untuk mulai.</p>
+                  )}
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={isSaving}
