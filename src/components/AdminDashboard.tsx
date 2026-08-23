@@ -109,8 +109,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         major: editingMember.major || 'Informatika',
         avatarUrl: editingMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
         bio: editingMember.bio || '',
-        instagramHandle: editingMember.instagramHandle || '@kkn24.member',
-        activityDate: editingMember.activityDate || '1 Agt - 12 Sep 2026'
+        instagramHandle: editingMember.instagramHandle || '@kkn24.member'
       };
       updatedMembers.push(newMember);
     }
@@ -902,7 +901,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     Live Mockup Anggota ({mockupMembers.length} Mahasiswa Aktif)
                   </div>
                   <h3 className="text-xl font-black text-white tracking-tight">
-                    Sunting Langsung Prodi, Instagram & Tanggal Kegiatan
+                    Sunting Langsung Prodi & Instagram Anggota
                   </h3>
                   <p className="text-xs text-slate-400 max-w-2xl">
                     Perubahan langsung pada kartu seluruh anggota tim (15+ anggota) akan tersimpan aman ke database Supabase dan tidak akan terpotong atau hilang.
@@ -999,7 +998,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
 
                       {/* EDITABLE INSTAGRAM HANDLE */}
-                      <div className="mb-2.5 p-2 rounded-xl bg-pink-950/40 border border-pink-500/40 space-y-1">
+                      <div className="p-2 rounded-xl bg-pink-950/40 border border-pink-500/40 space-y-1">
                         <div className="flex items-center justify-between text-[9px] font-extrabold text-pink-300 uppercase">
                           <span className="flex items-center gap-1">
                             <Instagram className="w-3 h-3 text-pink-400" />
@@ -1018,29 +1017,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           }}
                           placeholder="@username"
                           className="w-full bg-slate-950 border border-pink-500/40 rounded-lg px-2.5 py-1.5 text-xs text-pink-200 font-mono focus:outline-none focus:border-pink-400"
-                        />
-                      </div>
-
-                      {/* EDITABLE ACTIVITY DATE */}
-                      <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-                        <div className="flex items-center justify-between text-[9px] font-extrabold text-slate-300 uppercase">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-400" />
-                            Tanggal Kegiatan
-                          </span>
-                          <span className="px-1 py-0.2 rounded bg-slate-800 text-slate-300 text-[8px] font-black">EDIT</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={member.activityDate || ''}
-                          onChange={(e) => {
-                            const newDate = e.target.value;
-                            setMockupMembers((prev) =>
-                              prev.map((m) => (m.id === member.id ? { ...m, activityDate: newDate } : m))
-                            );
-                          }}
-                          placeholder="e.g. 1 Agt - 12 Sep 2026"
-                          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-slate-400"
                         />
                       </div>
 
@@ -1137,27 +1113,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-emerald-300 mb-1">Akun Instagram Handle</label>
-                  <input
-                    type="text"
-                    value={editingMember.instagramHandle || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, instagramHandle: e.target.value })}
-                    placeholder="e.g. @nama.akun"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-emerald-300 mb-1">Tanggal Kegiatan</label>
-                  <input
-                    type="text"
-                    value={editingMember.activityDate || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, activityDate: e.target.value })}
-                    placeholder="e.g. 1 Agt - 12 Sep 2026"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-emerald-300 mb-1">Akun Instagram Handle</label>
+                <input
+                  type="text"
+                  value={editingMember.instagramHandle || ''}
+                  onChange={(e) => setEditingMember({ ...editingMember, instagramHandle: e.target.value })}
+                  placeholder="e.g. @nama.akun"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                />
               </div>
 
               <div>

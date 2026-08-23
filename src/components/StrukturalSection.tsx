@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Member } from '../types';
-import { Search, GraduationCap, Instagram, User, X, Briefcase, ChevronRight, Calendar } from 'lucide-react';
+import { Search, GraduationCap, Instagram, User, X, Briefcase, ChevronRight } from 'lucide-react';
 
 interface StrukturalSectionProps {
   members: Member[];
@@ -137,15 +137,6 @@ export const StrukturalSection: React.FC<StrukturalSectionProps> = ({ members })
                   <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
                     {member.bio || 'Anggota KKN MAs Kelompok 24.'}
                   </p>
-
-                  {/* Activity Date Badge */}
-                  <div className="mb-3 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-600 flex items-center justify-between">
-                    <span className="text-slate-400 font-normal">Tanggal Kegiatan:</span>
-                    <span className="font-semibold text-emerald-800 flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-emerald-600" />
-                      {member.activityDate || '1 Agt - 12 Sep 2026'}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Footer Action */}

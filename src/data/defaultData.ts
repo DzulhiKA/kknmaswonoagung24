@@ -33,8 +33,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Teknik',
       avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
       bio: 'Memimpin sinergi tim, koordinasi dengan kepala desa dan mitra lokal untuk keberlanjutan seluruh program pengabdian.',
-      instagramHandle: '@oktafiyan.hilal',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@oktafiyan.hilal'
     },
     {
       id: 'mem-2',
@@ -45,8 +44,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Kesehatan',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
       bio: 'Mengelola persuratan, notulensi rapat, serta administrasi KKN MAs Kelompok 24.',
-      instagramHandle: '@alifah.nurazizah',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@alifah.nurazizah'
     },
     {
       id: 'mem-3',
@@ -57,8 +55,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Hukum',
       avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
       bio: 'Bertanggung jawab atas penyusunan berkas resmi, pelaporan proposal, dan LPJ KKN MAs Kelompok 24.',
-      instagramHandle: '@baiqlutfia',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@baiqlutfia'
     },
     {
       id: 'mem-4',
@@ -69,8 +66,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Ekonomi & Bisnis',
       avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
       bio: 'Mengelola anggaran kegiatan, transparansi keuangan, dan alokasi dana pendampingan program kerja.',
-      instagramHandle: '@deskia.adelia',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@deskia.adelia'
     },
     {
       id: 'mem-5',
@@ -81,8 +77,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Pendidikan',
       avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400',
       bio: 'Merancang rundown, alur pelaksanaan sosialisasi, bimbel, dan panggung malam puncak festival desa.',
-      instagramHandle: '@selvadea',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@selvadea'
     },
     {
       id: 'mem-6',
@@ -93,8 +88,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Komunikasi',
       avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
       bio: 'Koordinasi acara lapangan, bimbingan belajar anak-anak desa, dan festival kemasyarakatan.',
-      instagramHandle: '@adistya.nurfauzian',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@adistya.nurfauzian'
     },
     {
       id: 'mem-7',
@@ -105,8 +99,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Informatika',
       avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400',
       bio: 'Menghubungkan tim KKN dengan pihak desa, mengelola publikasi program kerja, dan media informasi.',
-      instagramHandle: '@fikriardhan01',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@fikriardhan01'
     },
     {
       id: 'mem-8',
@@ -117,8 +110,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Ilmu Komunikasi',
       avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400',
       bio: 'Pendampingan sosialisasi masyarakat, komunikasi dengan tokoh warga, dan pembuatan konten humas.',
-      instagramHandle: '@azzahracantika',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@azzahracantika'
     },
     {
       id: 'mem-9',
@@ -129,8 +121,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Psikologi',
       avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=400',
       bio: 'Menjaga keharmonisan hubungan kemasyarakatan dan pengelolaan publikasi kegiatan KKN.',
-      instagramHandle: '@shavakaisha',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@shavakaisha'
     },
     {
       id: 'mem-10',
@@ -141,8 +132,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Desain Komunikasi Visual',
       avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400',
       bio: 'Dokumentasi foto/video, pembuatan After Movie, desain poster, serta identitas visual kegiatan KKN MAs 24.',
-      instagramHandle: '@rizky.yulistyo',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@rizky.yulistyo'
     },
     {
       id: 'mem-11',
@@ -153,8 +143,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Komunikasi & Publikasi',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
       bio: 'Dokumentasi kegiatan lapangan, publikasi media, dan pengerjaan konten visual KKN.',
-      instagramHandle: '@naila.kamilah',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@naila.kamilah'
     },
     {
       id: 'mem-12',
@@ -165,8 +154,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Desain & Publikasi',
       avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400',
       bio: 'Dokumentasi serta pubdok kegiatan harian dan desain publikasi program kerja KKN MAs.',
-      instagramHandle: '@hayatun.kamilah',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@hayatun.kamilah'
     },
     {
       id: 'mem-13',
@@ -177,8 +165,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Teknik',
       avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
       bio: 'Menyiapkan sarana prasarana, logistik perlengkapan posko, dan kebutuhan alat program kerja.',
-      instagramHandle: '@reja.pratama',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@reja.pratama'
     },
     {
       id: 'mem-14',
@@ -189,8 +176,7 @@ export const INITIAL_APP_DATA: AppData = {
       major: 'Logistik & Operasional',
       avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
       bio: 'Pengelolaan inventarisasi perlengkapan, operasional posko, dan persiapan teknis acara.',
-      instagramHandle: '@lidya.hartika',
-      activityDate: '1 Agt - 12 Sep 2026'
+      instagramHandle: '@lidya.hartika'
     }
   ],
   prokerList: [
