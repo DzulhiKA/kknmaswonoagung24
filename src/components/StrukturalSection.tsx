@@ -21,6 +21,7 @@ export const StrukturalSection: React.FC<StrukturalSectionProps> = ({ members })
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.university.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.major && m.major.toLowerCase().includes(searchQuery.toLowerCase())) ||
       m.division.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDiv && matchesSearch;
   });
