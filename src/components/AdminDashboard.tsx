@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppData, Member, Proker, DocumentationPhoto, ProkerCategory, ProkerStatus } from '../types';
+import { compressImageFile } from '../utils/imageCompressor';
 import { 
   ShieldCheck, Home, Users, BookOpen, Share2, Image, RefreshCw, Plus, Trash2, Edit3, 
   Save, Check, X, Film, Sparkles, Eye, Instagram, Calendar, LayoutGrid, Search,
@@ -8,7 +9,7 @@ import {
 
 interface AdminDashboardProps {
   data: AppData;
-  onUpdateData: (newData: AppData) => Promise<void> | void;
+  onUpdateData: (newData: AppData) => Promise<{ success: boolean; error?: string } | void> | void;
   onResetData: () => Promise<void> | void;
   onClose: () => void;
 }
@@ -21,6 +22,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'home' | 'members' | 'proker' | 'socials' | 'dokumentasi' | 'mockup'>('members');
   const [savedSuccessMsg, setSavedSuccessMsg] = useState('');
+  const [savedErrorMsg, setSavedErrorMsg] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Search & Filter queries for CMS tables
@@ -34,7 +36,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [socialsForm, setSocialsForm] = useState(data.socials);
   const [afterMovieForm, setAfterMovieForm] = useState(data.afterMovie);
 
-  // Local state for all mockup profile cards editable fields (supports 15+ members)
+  // Local state for all mockup profile cards editable fields (supports 20+ members)
   const [mockupMembers, setMockupMembers] = useState<Member[]>(() => data.members);
 
   // Synchronize state whenever data prop is updated from Supabase or parent
@@ -55,16 +57,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editingPhoto, setEditingPhoto] = useState<Partial<DocumentationPhoto> | null>(null);
 
   const showNotification = (msg: string) => {
+    setSavedErrorMsg('');
     setSavedSuccessMsg(msg);
-    setTimeout(() => setSavedSuccessMsg(''), 4000);
+    setTimeout(() => setSavedSuccessMsg(''), 4500);
+  };
+
+  const showErrorNotification = (msg: string) => {
+    setSavedSuccessMsg('');
+    setSavedErrorMsg(msg);
+    setTimeout(() => setSavedErrorMsg(''), 6000);
   };
 
   // Generic Save Handler with Loading Spinner & Supabase Toast
   const executeSave = async (updatedData: AppData, successMessage: string) => {
     setIsSaving(true);
-    await onUpdateData(updatedData);
-    setIsSaving(false);
-    showNotification(successMessage);
+    setSavedErrorMsg('');
+    try {
+      const result = await onUpdateData(updatedData);
+      setIsSaving(false);
+      if (result && typeof result === 'object' && result.success === false) {
+        showErrorNotification(`Gagal menyimpan ke Database: ${result.error || 'Terjadi kesalahan'}`);
+      } else {
+        showNotification(successMessage);
+      }
+    } catch (err: any) {
+      setIsSaving(false);
+      showErrorNotification(`Gagal menyimpan: ${err?.message || 'Error koneksi database'}`);
+    }
   };
 
   // --- SAVE HOME ---
@@ -192,17 +211,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // File upload to Base64 Data URL helper
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  // File upload to Compressed Base64 Data URL helper
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    callback: (url: string) => void,
+    type: 'avatar' | 'photo' = 'avatar'
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          callback(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const maxWidth = type === 'avatar' ? 400 : 1000;
+        const maxHeight = type === 'avatar' ? 400 : 800;
+        const quality = type === 'avatar' ? 0.75 : 0.8;
+        const compressedUrl = await compressImageFile(file, maxWidth, maxHeight, quality);
+        callback(compressedUrl);
+      } catch (err) {
+        console.error('Error compressing image:', err);
+      }
     }
   };
 
@@ -241,7 +266,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col font-sans">
       
-      {/* Toast Notification Banner */}
+      {/* Toast Notification Banner (Success) */}
       {savedSuccessMsg && (
         <div className="bg-emerald-500 text-slate-950 px-6 py-3 font-extrabold text-xs shadow-xl flex items-center justify-between animate-in slide-in-from-top duration-200 border-b border-emerald-400">
           <div className="flex items-center gap-2">
@@ -249,6 +274,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span>{savedSuccessMsg}</span>
           </div>
           <button onClick={() => setSavedSuccessMsg('')} className="hover:opacity-75">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Toast Notification Banner (Error) */}
+      {savedErrorMsg && (
+        <div className="bg-rose-500 text-white px-6 py-3 font-extrabold text-xs shadow-xl flex items-center justify-between animate-in slide-in-from-top duration-200 border-b border-rose-400">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            <span>{savedErrorMsg}</span>
+          </div>
+          <button onClick={() => setSavedErrorMsg('')} className="hover:opacity-75">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -456,38 +494,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
-              {/* Member Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Member Cards Grid (Compact 20+ Support) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredMembers.map((member) => (
-                  <div key={member.id} className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-4 hover:border-slate-700 transition-colors">
-                    <div className="flex items-center gap-3.5 overflow-hidden">
-                      <img src={member.avatarUrl} alt={member.name} className="w-14 h-14 rounded-2xl object-cover shrink-0 bg-slate-900 border border-slate-800" referrerPolicy="no-referrer" />
+                  <div key={member.id} className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3 hover:border-slate-700 transition-colors">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <img src={member.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400'} alt={member.name} className="w-12 h-12 rounded-xl object-cover shrink-0 bg-slate-900 border border-slate-800" referrerPolicy="no-referrer" />
                       <div className="overflow-hidden space-y-0.5">
-                        <div className="font-bold text-white text-sm truncate">{member.name}</div>
-                        <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5 truncate">
+                        <div className="font-bold text-white text-xs sm:text-sm truncate">{member.name}</div>
+                        <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 truncate">
                           <span>{member.role}</span>
                           <span className="text-slate-600">•</span>
-                          <span className="text-slate-300 font-normal">{member.division}</span>
+                          <span className="text-slate-400 font-normal truncate">{member.division}</span>
                         </div>
-                        <div className="text-[11px] text-slate-400 truncate">
+                        <div className="text-[10px] text-slate-400 truncate">
                           <span>{member.university}</span> — <span className="text-emerald-300 font-medium">Prodi {member.major || '-'}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         onClick={() => setEditingMember(member)}
-                        className="p-2.5 bg-slate-900 hover:bg-slate-800 text-emerald-300 rounded-xl text-xs border border-slate-800"
+                        className="p-2 bg-slate-900 hover:bg-slate-800 text-emerald-300 rounded-xl text-xs border border-slate-800"
                         title="Sunting Data Anggota"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteMember(member.id)}
-                        className="p-2.5 bg-slate-900 hover:bg-rose-950 text-rose-400 rounded-xl text-xs border border-slate-800"
+                        className="p-2 bg-slate-900 hover:bg-rose-950 text-rose-400 rounded-xl text-xs border border-slate-800"
                         title="Hapus Anggota"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -948,15 +986,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              {/* All Members Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* All Members Cards Grid (Compact 20+ Support) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 {filteredMockupMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="bg-slate-950 rounded-2xl p-4 border border-slate-800 hover:border-emerald-500/60 shadow-xl flex flex-col justify-between transition-all group"
+                    className="bg-slate-950 rounded-2xl p-3 border border-slate-800 hover:border-emerald-500/60 shadow-xl flex flex-col justify-between transition-all group"
                   >
                     <div>
-                      <div className="relative mb-3">
+                      <div className="relative mb-2.5">
                         <div className="aspect-square w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
                           <img
                             src={member.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400'}
@@ -965,23 +1003,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             referrerPolicy="no-referrer"
                           />
                         </div>
-                        <span className="absolute bottom-2 left-2 right-2 px-2 py-1 bg-slate-950/90 text-emerald-300 text-[11px] font-bold rounded-lg text-center backdrop-blur-sm truncate border border-emerald-600/40">
+                        <span className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-0.5 bg-slate-950/90 text-emerald-300 text-[10px] font-bold rounded-lg text-center backdrop-blur-sm truncate border border-emerald-600/40">
                           {member.role}
                         </span>
                       </div>
 
-                      <h4 className="font-bold text-white text-sm line-clamp-1 mb-0.5">{member.name}</h4>
-                      <div className="text-[11px] text-emerald-400 font-semibold mb-1 truncate">{member.division}</div>
-                      <div className="text-[10px] text-slate-400 mb-3 truncate">{member.university}</div>
+                      <h4 className="font-bold text-white text-xs sm:text-sm line-clamp-1 mb-0.5">{member.name}</h4>
+                      <div className="text-[10px] text-emerald-400 font-semibold mb-0.5 truncate">{member.division}</div>
+                      <div className="text-[10px] text-slate-400 mb-2 truncate">{member.university}</div>
 
                       {/* EDITABLE PRODI / MAJOR */}
-                      <div className="mb-2.5 p-2 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-                        <div className="flex items-center justify-between text-[9px] font-extrabold text-emerald-300 uppercase">
+                      <div className="mb-2 p-1.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                        <div className="flex items-center justify-between text-[8px] font-extrabold text-emerald-300 uppercase">
                           <span className="flex items-center gap-1">
-                            <GraduationCap className="w-3 h-3 text-emerald-400" />
-                            Program Studi (Prodi)
+                            <GraduationCap className="w-2.5 h-2.5 text-emerald-400" />
+                            Prodi
                           </span>
-                          <span className="px-1 py-0.2 rounded bg-emerald-500/30 text-emerald-300 text-[8px] font-black">EDIT</span>
+                          <span className="px-1 py-0.2 rounded bg-emerald-500/30 text-emerald-300 text-[7px] font-black">EDIT</span>
                         </div>
                         <input
                           type="text"
@@ -993,18 +1031,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             );
                           }}
                           placeholder="e.g. Informatika"
-                          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-200 font-medium focus:outline-none focus:border-emerald-400"
+                          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-emerald-200 font-medium focus:outline-none focus:border-emerald-400"
                         />
                       </div>
 
                       {/* EDITABLE INSTAGRAM HANDLE */}
-                      <div className="p-2 rounded-xl bg-pink-950/40 border border-pink-500/40 space-y-1">
-                        <div className="flex items-center justify-between text-[9px] font-extrabold text-pink-300 uppercase">
+                      <div className="p-1.5 rounded-xl bg-pink-950/40 border border-pink-500/40 space-y-1">
+                        <div className="flex items-center justify-between text-[8px] font-extrabold text-pink-300 uppercase">
                           <span className="flex items-center gap-1">
-                            <Instagram className="w-3 h-3 text-pink-400" />
-                            Instagram Handle
+                            <Instagram className="w-2.5 h-2.5 text-pink-400" />
+                            Instagram
                           </span>
-                          <span className="px-1 py-0.2 rounded bg-pink-500/40 text-pink-200 text-[8px] font-black">EDIT</span>
+                          <span className="px-1 py-0.2 rounded bg-pink-500/40 text-pink-200 text-[7px] font-black">EDIT</span>
                         </div>
                         <input
                           type="text"
@@ -1016,7 +1054,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             );
                           }}
                           placeholder="@username"
-                          className="w-full bg-slate-950 border border-pink-500/40 rounded-lg px-2.5 py-1.5 text-xs text-pink-200 font-mono focus:outline-none focus:border-pink-400"
+                          className="w-full bg-slate-950 border border-pink-500/40 rounded-lg px-2 py-1 text-[11px] text-pink-200 font-mono focus:outline-none focus:border-pink-400"
                         />
                       </div>
 
@@ -1141,7 +1179,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, (url) => setEditingMember({ ...editingMember, avatarUrl: url }))}
+                      onChange={(e) => handleFileUpload(e, (url) => setEditingMember({ ...editingMember, avatarUrl: url }), 'avatar')}
                     />
                   </label>
                 </div>
@@ -1302,7 +1340,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, (url) => setEditingPhoto({ ...editingPhoto, imageUrl: url }))}
+                      onChange={(e) => handleFileUpload(e, (url) => setEditingPhoto({ ...editingPhoto, imageUrl: url }), 'photo')}
                     />
                   </label>
                 </div>

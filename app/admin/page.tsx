@@ -78,7 +78,8 @@ export default function AdminPage() {
 
   const handleUpdateData = async (newData: AppData) => {
     setAppData(newData);
-    await saveAppDataToSupabase(newData);
+    const result = await saveAppDataToSupabase(newData);
+    return result;
   };
 
   const handleResetData = async () => {
